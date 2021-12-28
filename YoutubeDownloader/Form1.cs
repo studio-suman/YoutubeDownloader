@@ -16,84 +16,63 @@ namespace YoutubeDownloader
 {
     public partial class Utube1 : Form
     {
+        
+        
+
         public Utube1()
         {
             InitializeComponent();
-        }
-
-        private void button1_Click(object sender, EventArgs e)
-        {
-            string path = OpenFolder();
-            if(checkBox2.Checked)
-            {
-
-                SaveMP3(path, textBox1.Text, "MyPath");
-            }
-
-            if (checkBox1.Checked)
-            {
-
-                SaveAll(path, textBox1.Text);
-            }
+            
 
         }
 
-        // To Save Audio Only
-        private void SaveMP3(string SaveToFolder, string VideoURL, string MP3Name)
+     
+
+
+        private async void button1_Click(object sender, EventArgs e)
         {
-            var source = @SaveToFolder;
-            var youtube = YouTube.Default;
-            var vid = youtube.GetVideo(VideoURL);
-            File.WriteAllBytes(source + vid.FullName, vid.GetBytes());
+            // Bring up a dialog to chose a folder path in which to open or save a file.
 
-            var inputFile = new MediaFile { Filename = source + vid.FullName };
-            var outputFile = new MediaFile { Filename = $"{MP3Name}.mp3" };
-
-            using (var engine = new Engine())
+           using (FolderBrowserDialog fbd = new FolderBrowserDialog() { Description = "Select File Path to Save:"})
             {
-                engine.GetMetadata(inputFile);
+                if(fbd.ShowDialog()==DialogResult.OK)
+                {
+                    MessageBox.Show("Incorrect Path....", "File", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    var yt = YouTube.Default;
+                    var video = await yt.GetVideoAsync(textBox1.Text);
+                    File.WriteAllBytes(fbd.SelectedPath+@"\"+video.FullName, await video.GetBytesAsync());
 
-                engine.Convert(inputFile, outputFile);
-            }
-        }
-        
-        // To Save Video Only
-        private void SaveAll(string SaveToFolder, string VideoURL)
-        {
-            var source = @SaveToFolder;
-            var youtube = YouTube.Default;
-            var vid = youtube.GetVideo(VideoURL);
-            File.WriteAllBytes(source + vid.FullName, vid.GetBytes());
+                    var inputfile = new MediaFile { Filename = fbd.SelectedPath + @"\" + video.FullName };
+                    var outputfile = new MediaFile { Filename = $"{fbd.SelectedPath + @"\" + video.FullName}.mp3" };
 
-            var inputFile = new MediaFile { Filename = source + vid.FullName };
-            var outputFile = new MediaFile { Filename = vid.FullName + ".mp4" };
 
-            using (var engine = new Engine())
-            {
-                engine.GetMetadata(inputFile);
+                    using (var enging = new Engine())
+                    {
+                        enging.GetMetadata(inputfile);
+                        enging.Convert(inputfile, outputfile);
 
-                engine.Convert(inputFile, outputFile);
-            }
-        }
+                    }
+                    if(checkBox1.Checked)
+                    {
+                        File.Delete($"{fbd.SelectedPath + @"\" + video.FullName}.mp3");
+                    }
+                    else
+                    {
+                        File.Delete(fbd.SelectedPath + @"\" + video.FullName);
+                    }
+                    progressBar1.Value = 100;
+                    MessageBox.Show("File Dowloaded Successfully", "Confirmation", MessageBoxButtons.OK);
 
-        // Bring up a dialog to chose a folder path in which to open or save a file.
-        private string OpenFolder()
-        {
-            var folderBrowserDialog1 = new FolderBrowserDialog();
+                    
 
-            // Show the FolderBrowserDialog.
-            DialogResult result = folderBrowserDialog1.ShowDialog();
-            if (result == DialogResult.OK)
-            {
-                string folderName = folderBrowserDialog1.SelectedPath;
-
-                return folderName;
-
+                }
+                else
+                {
+                    MessageBox.Show("Incorrect Path....", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+                
             }
 
-            string folderpath = folderBrowserDialog1.SelectedPath;
-
-            return folderpath;
         }
     }
 
