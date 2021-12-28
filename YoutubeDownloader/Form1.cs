@@ -61,6 +61,7 @@ namespace YoutubeDownloader
                         File.Delete(fbd.SelectedPath + @"\" + video.FullName);
                     }
                     progressBar1.Value = 100;
+                    label2.Text = "100%"
                     MessageBox.Show("File Dowloaded Successfully", "Confirmation", MessageBoxButtons.OK);
 
                     
